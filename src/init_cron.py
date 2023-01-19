@@ -4,8 +4,8 @@ import os
 
 class InitCron:
     def __init__(self):
-        self.minutes = "0"
-        self.hours = "8-22"
+        self.minutes = "0,15,30,45"
+        self.hours = "0-2,9-23"
         self.days = "*"
         self.month = "*"
         self.years = "*"
