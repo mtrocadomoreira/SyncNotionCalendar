@@ -31,8 +31,8 @@ class InitConf:
             self.databases_id.append(db_token)
 
     def ask_extra_properties(self):
+        ev_summary = input("Which database column would you like to use for the event title? (optional)")
         ev_description = input("Which database column would you like to use for the event description? (optional)")
-        ev_summary = input("Which database column would you like to use for the event summary? (optional)")
         ev_url = input("Which database column would you like to use for the event URL? (optional)")
         self.ev_description = ev_description.replace(' ', '_')
         self.ev_summary = ev_summary.replace(' ', '_')
