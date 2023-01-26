@@ -9,7 +9,7 @@ import logging
 class Database():
     """This class stores event already added to Calendar. It performs also updates : add new cards, modify cards, delete cards.
     """
-    def __init__(self,id:str,notion_token:str,apple_calendar:str,folder=os.getcwd()) -> None:
+    def __init__(self,id:str,notion_token:str,apple_calendar:str,event_properties:dict,folder=os.getcwd()) -> None:
         """Constructor
 
         Args:

@@ -28,8 +28,13 @@ if __name__ == "__main__":
     conf.read('config.ini')
     notion_token = conf['GLOBAL']['NOTION_TOKEN']
     apple_calendar = conf['GLOBAL']['APPLE_CALENDAR']
+    event_properties = {
+        'description': conf['PROPERTIES']['DESCRIPTION'],
+        'summary': conf['PROPERTIES']['SUMMARY'],
+        'url': conf['PROPERTIES']['URL']
+        }
     for key, database_id in conf['DATABASES'].items():
         logging.info(f"Start database {key}")
-        db = Database(database_id, notion_token, apple_calendar, folder=os.path.join(cwd, 'databases'))
+        db = Database(database_id, notion_token, apple_calendar, event_properties, folder=os.path.join(cwd, 'databases'))
         db.run()
         logging.info(f"End database {key}")
