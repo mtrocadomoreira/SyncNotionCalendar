@@ -30,6 +30,14 @@ class InitConf:
             self.database_name.append(db_name)
             self.databases_id.append(db_token)
 
+    def ask_extra_properties(self):
+        ev_description = input("Which database column would you like to use for the event description? (optional)")
+        ev_summary = input("Which database column would you like to use for the event summary? (optional)")
+        ev_url = input("Which database column would you like to use for the event URL? (optional)")
+        self.ev_description = ev_description.replace(' ', '_')
+        self.ev_summary = ev_summary.replace(' ', '_')
+        self.ev_url = ev_url.replace(' ', '_')
+
     def write_config_file(self, path):
         config = configparser.ConfigParser()
         config['GLOBAL'] = {
@@ -39,6 +47,11 @@ class InitConf:
         config['DATABASES'] = {
             name: id_ for (name, id_) in zip(self.database_name, self.databases_id)
         }
+        config['PROPERTIES'] = {
+            "DESCRIPTION": self.ev_description,
+            "SUMMARY": self.ev_summary,
+            "URL": self.ev_url
+        }
         with open(path, 'w') as configfile:
             config.write(configfile)
 
@@ -46,6 +59,7 @@ class InitConf:
         self.ask_notion_token()
         self.ask_calendar_name()
         self.ask_databases()
+        self.ask_extra_properties()
         self.write_config_file(path)
 
 
