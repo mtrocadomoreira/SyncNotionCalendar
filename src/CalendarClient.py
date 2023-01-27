@@ -17,7 +17,7 @@ class CalendarClient:
     def __repr__(self) -> str:
         return f"calendar {self.name}"
 
-    def add_event(self, title: str, start_date: str, end_date: str, start_time: str, end_time: str) -> str:
+    def add_event(self, title: str, start_date: str, end_date: str, start_time: str, end_time: str, description: str, url: str) -> str:
         """Adds an event to Calendar
         Summary is set to `title` and we define the start datetime and end datetime with the provided arguments
 
@@ -27,6 +27,8 @@ class CalendarClient:
             end_date (str) : format `%Y-%m-%d` or 'None'
             start_time (str) : format `%H:%M:%S` or 'None'
             end_time (str) : format `%H:%M:%S` or 'None'
+            description (str): will be used for event notes
+            url (str): will be used for event URL
         
         Returns:
             str : Id of the newly created event
@@ -108,7 +110,7 @@ class CalendarClient:
         cmd += f"""
         tell application "Calendar"
             tell calendar "{self.name}"
-                make new event with properties {{summary:"{title}", start date:theStartDate, end date:theEndDate, allday event:isAllDay}}
+                make new event with properties {{summary:"{title}", start date:theStartDate, end date:theEndDate, allday event:isAllDay, description:"{description}", url:"{url}"}}
             end tell
         end tell
         """
