@@ -61,7 +61,9 @@ class Database():
         start_time = str(card_serie.start_time)
         end_date = str(card_serie.end_date)
         end_time = str(card_serie.end_time)
-        return (title,start_date,end_date,start_time,end_time)
+        description = str(card_serie.description)
+        url = str(card_serie.url)
+        return (title,start_date,end_date,start_time,end_time,description,url)
 
     def get_live(self)->pd.DataFrame:
         """Get a database corresponding to the actual state in Notion app
