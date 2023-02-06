@@ -8,7 +8,7 @@ class Card:
     """This class represents a Notion card as a dict thanks to the `to_dict` method
     """
 
-    def __init__(self, page: Dict) -> None:
+    def __init__(self, page: Dict, extra_parameters: dict, notion_client) -> None:
         """Constructor
         Data stored :
         - page id
@@ -21,10 +21,13 @@ class Card:
             page (Dict): dict from API call result
         """
         self._id = page['id']
-        self.title = page.get('properties').get('Name').get('title')[0].get('plain_text')
+        self.title = page.get('properties')[extra_parameters['summary']]['rollup']['array'][0]['title'][0]['plain_text']
         self.last_edited_time = self._convert_datetime(page.get('last_edited_time'))
         (self.start_date, self.start_time) = self._convert_datetime(page.get('properties').get('date').get('date').get('start'))
-        (self.end_date, self.end_time) = self._convert_datetime(page.get('properties').get('date').get('date').get('end'))
+        (self.end_date, self.end_time) = self._convert_datetime(page.get('properties')['date']['date']['end'])
+        self.description = 'Due date: ' + page.get('properties')[extra_parameters['description']]['rollup']['array'][0]['date']['start']
+        original_pageid = page.get('properties')[extra_parameters['url']]['relation'][0]['id']
+        self.url = notion_client.get_page_url(original_pageid)
 
     def to_dict(self) -> Dict:
         """Returns a representation of the card object as a Dict
@@ -39,7 +42,9 @@ class Card:
             'start_time': self.start_time,
             'end_date': self.end_date,
             'end_time': self.end_time,
-            'title': self.title
+            'title': self.title,
+            'description': self.description,
+            'url': self.url
         }
         return _dict
 
@@ -82,7 +87,7 @@ class NotionClient:
         }
         self._base_url = "https://api.notion.com/v1/"
 
-    def get_live_cards(self, database_id: str) -> List[Card]:
+    def get_live_cards(self, database_id: str, extra_parameters: dict) -> List[Card]:
         """API call that returns a list of card where the property date is specified.
         Outdated cards are not returned
 
@@ -117,6 +122,16 @@ class NotionClient:
                 logging.error('while fetching cards on Notion : {q.text}')
                 raise Exception(q.text)
             has_more = q.json()['has_more']
-            start_cursor = q.json()['next_cursor']
-        _list_card = [Card(page) for page in _list_page]
+            start_cursor = q.json()['next_cursor']    
+        _list_card = [Card(page, extra_parameters, self) for page in _list_page]
         return _list_card
+
+    def get_page_url(self, page_id: str) -> str:
+        _url = f"{self._base_url}pages/{page_id}"
+        q = requests.get(_url, headers=self._headers)
+        try:
+            page_url = q.json()['url']
+        except:
+            logging.error('while fetching cards on Notion : {q.text}')
+            raise Exception(q.text)
+        return page_url
