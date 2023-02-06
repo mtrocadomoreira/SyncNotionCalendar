@@ -20,6 +20,7 @@ class Database():
         self.calendar_client = CalendarClient(apple_calendar)
         self._path = f"{os.path.join(folder,id)}.csv"
         self.id = id
+        self.extra_parameters = event_properties
         
         if os.path.exists(self._path):
             self.df = pd.read_csv(self._path,index_col='id',parse_dates=['last_edit','start_date','end_date'])
@@ -72,7 +73,7 @@ class Database():
         Returns:
             pd.DataFrame: live database
         """
-        current_cards = self.notion_client.get_live_cards(self.id)
+        current_cards = self.notion_client.get_live_cards(self.id, self.extra_parameters)
         current_as_dict = list(map(lambda card : card.to_dict(),current_cards))
         if len(current_as_dict) > 0:
             return pd.DataFrame(current_as_dict).set_index('id')
