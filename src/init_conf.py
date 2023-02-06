@@ -34,9 +34,9 @@ class InitConf:
         ev_summary = input("Which database column would you like to use for the event title? (optional)")
         ev_description = input("Which database column would you like to use for the event description? (optional)")
         ev_url = input("Which database column would you like to use for the event URL? (optional)")
-        self.ev_description = ev_description.replace(' ', '_')
-        self.ev_summary = ev_summary.replace(' ', '_')
-        self.ev_url = ev_url.replace(' ', '_')
+        self.ev_description = ev_description # .replace(' ', '_')
+        self.ev_summary = ev_summary # .replace(' ', '_')
+        self.ev_url = ev_url # .replace(' ', '_')
 
     def write_config_file(self, path):
         config = configparser.ConfigParser()
