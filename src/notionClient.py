@@ -22,12 +22,22 @@ class Card:
         """
         self._id = page['id']
         self.title = page.get('properties')[extra_parameters['summary']]['rollup']['array'][0]['title'][0]['plain_text']
-        self.last_edited_time = self._convert_datetime(page.get('last_edited_time'))
-        (self.start_date, self.start_time) = self._convert_datetime(page.get('properties').get('date').get('date').get('start'))
-        (self.end_date, self.end_time) = self._convert_datetime(page.get('properties')['date']['date']['end'])
+        # (temp_date,temp_time) = self._convert_datetime(page.get('last_edited_time'))
+        # self.last_edited_time = datetime.combine(temp_date,temp_time)
+        startdate = page.get('properties')['Date']['rollup']['array'][0]['date']['start']
+        enddate = page.get('properties')['Date']['rollup']['array'][0]['date']['end']
+        (self.start_date, self.start_time) = self._convert_datetime(startdate)
+        (self.end_date, self.end_time) = self._convert_datetime(enddate)
+        # (self.start_date, self.start_time) = self._convert_datetime(page.get('properties').get('date').get('date').get('start'))
+        # (self.end_date, self.end_time) = self._convert_datetime(page.get('properties')['date']['date']['end'])
         self.description = 'Due date: ' + page.get('properties')[extra_parameters['description']]['rollup']['array'][0]['date']['start']
+        
+        # Data that has to be fetched from original page through the relation property
         original_pageid = page.get('properties')[extra_parameters['url']]['relation'][0]['id']
-        self.url = notion_client.get_page_url(original_pageid)
+        original_data = notion_client.get_relation_page_data(original_pageid)
+        self.url = original_data['url']
+        (temp_date,temp_time) = self._convert_datetime(original_data['last_edited_time'])
+        self.last_edited_time = datetime.combine(temp_date,temp_time)
 
     def to_dict(self) -> Dict:
         """Returns a representation of the card object as a Dict
@@ -61,7 +71,7 @@ class Card:
             (date, time): (datetime.date, datetime.time)
         """
         if notion_datetime is None:
-            return (notion_datetime, notion_datetime)
+            return (notion_datetime, notion_datetime)    
         tmp = notion_datetime.split('T')
         if len(tmp) == 1:
             fulldt = datetime.strptime(f'{tmp[0]} 00:00:00', '%Y-%m-%d %H:%M:%S')
@@ -106,10 +116,13 @@ class NotionClient:
         _url = f"{self._base_url}databases/{database_id}/query"
         payload = {
             "filter": {
-                "property": "date",
-                "date": {
-                    "on_or_after": datetime.now().strftime("%Y-%m-%d")
+                "property": "Date", # "date",
+                "rollup": {
+                    "every": { "date": { "on_or_after": datetime.now().strftime("%Y-%m-%d") } }
                 }
+                # "date": {
+                #     "on_or_after": datetime.now().strftime("%Y-%m-%d")
+                # }
             },
         }
         while has_more:
@@ -126,12 +139,12 @@ class NotionClient:
         _list_card = [Card(page, extra_parameters, self) for page in _list_page]
         return _list_card
 
-    def get_page_url(self, page_id: str) -> str:
+    def get_relation_page_data(self, page_id: str) -> dict:
         _url = f"{self._base_url}pages/{page_id}"
         q = requests.get(_url, headers=self._headers)
         try:
-            page_url = q.json()['url']
+            page_data = q.json()
         except:
             logging.error('while fetching cards on Notion : {q.text}')
             raise Exception(q.text)
-        return page_url
+        return page_data
